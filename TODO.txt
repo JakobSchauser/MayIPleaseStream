@@ -1,0 +1,10 @@
+
+Find genres across streaming services
+
+Implement Actors and Countries
+
+Sort by IMDB-reviews
+
+Take letterboxd-list?
+
+Top 250
