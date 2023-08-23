@@ -1,11 +1,41 @@
 import {useState} from 'react';
 // import {useEffect} from 'react';
+import * as React from 'react'
+
+// 1. import `ChakraProvider` component
+import { ChakraProvider } from '@chakra-ui/react'
+import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+} from '@chakra-ui/react'
+import { Button } from '@chakra-ui/react'
+import { Input } from '@chakra-ui/react'
+import { useDisclosure } from '@chakra-ui/react'
+import { VStack } from '@chakra-ui/react'
+
 
 export default function App() {
+  // 2. Wrap ChakraProvider at the root of your app
+  return (
+    <ChakraProvider>
+      <MainApp />
+    </ChakraProvider>
+  )
+}
+
+
+function MainApp() {
   const [services, setServices] = useState(Array(7).fill(false));
   const [data, setData] = useState([{"title":"Use the search bar above","services":""}]);
   // const [search, setSearch] = useState("");
-
+  let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
   function handleTickboxCheck(i) {
     var newServices = services.slice(); 
     var a = 1;
@@ -16,6 +46,7 @@ export default function App() {
 
 
   function onSubmit(event) {
+
     event.preventDefault();
     // Using fetch to fetch the api from
     // flask server it will be redirected to proxy
@@ -60,13 +91,7 @@ export default function App() {
         <h2 className='title'>May I Please Stream?</h2>
         <SearchBar handleSubmit = {onSubmit}/>
         <h3 className='title'> Services</h3>
-        <ServiceCheckbox service="Netflix"      handleTickboxCheck={() => handleTickboxCheck(0)}/>
-        <ServiceCheckbox service="Filmstriben"  handleTickboxCheck={() => handleTickboxCheck(1)}/> 
-        <ServiceCheckbox service="Disney+"  handleTickboxCheck={() => handleTickboxCheck(2)}/> 
-        <ServiceCheckbox service="HBO MAX"      handleTickboxCheck={() => handleTickboxCheck(3)}/> 
-        <ServiceCheckbox service="Prime Video"  handleTickboxCheck={() => handleTickboxCheck(4)}/> 
-        <ServiceCheckbox service="Sky Showtime"  handleTickboxCheck={() => handleTickboxCheck(5)}/> 
-        <ServiceCheckbox service="Viaplay"      handleTickboxCheck={() => handleTickboxCheck(6)}/> 
+        <DrawerExample services={ availableServices } handleTickboxCheck= { handleTickboxCheck }/>
       </div>
     <div className="results-frame">
       <h3 className='title'>Results</h3>
@@ -95,7 +120,6 @@ function Result({name, services}) {
 }      
 
 function SearchBar({handleSubmit}) {
-
   return (
     <>
     <form className="search-bar" onSubmit={handleSubmit}>
@@ -108,21 +132,59 @@ function SearchBar({handleSubmit}) {
   );
 }
 
+
+function DrawerExample({services , handleTickboxCheck}) {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const btnRef = React.useRef()
+
+  return (
+    <>
+      <Button ref={btnRef} colorScheme='teal' onClick={onOpen}>
+        Open
+      </Button>
+
+      <Drawer
+        isOpen={isOpen}
+        placement='left'
+        onClose={onClose}
+        finalFocusRef={btnRef}
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>Create your account</DrawerHeader>
+
+          <DrawerBody>
+            <CheckboxGroup colorScheme='teal' defaultValue={['Netflix']}>
+              <VStack align='start'>
+                {services.map(function (item, i){
+                  if(item){
+                    return <ServiceCheckbox service={item} handleTickboxCheck={() => handleTickboxCheck(i)}/>
+                  }
+                })}
+              </VStack>
+          </CheckboxGroup>
+          </DrawerBody>
+
+          <DrawerFooter>
+            <Button variant='outline' mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme='blue'>Save</Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
+  )
+}
+
+
 function ServiceCheckbox({service, handleTickboxCheck}) {
   // const [checked, setChecked] = useState(false);
   return (
     
-    <div className="serviceCheckbox">
-      <label>
-      <input 
-        type="checkbox"
-        onChange={handleTickboxCheck}
-        /> 
-      {service}
-      </label>
+    <Checkbox onChange={handleTickboxCheck} > {service} </Checkbox>
       
-      
-    </div>
   );
 }
 
