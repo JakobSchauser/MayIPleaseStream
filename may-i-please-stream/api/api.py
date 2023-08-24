@@ -20,3 +20,9 @@ def get_current_test():
     # return request_data
     sf = StreamFinder(services=services)
     return sf.make_json(sf.get_director_movies(director))
+
+
+
+if __name__ == '__main__':
+    print("Should start server")
+    app.run(debug=True)

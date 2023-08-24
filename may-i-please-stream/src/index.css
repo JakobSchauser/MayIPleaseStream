@@ -14,17 +14,12 @@ code {
 
 .app-frame{
   width: 50%;
-  border: 1px solid black;
+  /* border: 1px solid black; */
   margin: auto;
   margin-top: 40px;
 
 }
 
-.results-frame{
-  width: 50%;
-  border: 1px dotted rgb(172, 172, 172);
-  margin: auto;
-}
 
 .title{
   text-align: center;
@@ -39,18 +34,14 @@ code {
   margin-bottom: 10px;
 }
 
-/* container */
-.results {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
+
 
 /* container */
-.header {
+/* .header {
   width: 50%;
   border: 1px dotted rgb(172, 172, 172);
   margin: auto;
-}
+} */
 
 
 /* columns */

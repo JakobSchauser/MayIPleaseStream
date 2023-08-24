@@ -3,9 +3,9 @@ import {useState} from 'react';
 import * as React from 'react'
 
 // 1. import `ChakraProvider` component
-import { ChakraProvider } from '@chakra-ui/react'
-import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
+import { ChakraProvider, Divider } from '@chakra-ui/react'
 import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
+import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
 import {
   Drawer,
   DrawerBody,
@@ -15,11 +15,24 @@ import {
   DrawerContent,
   DrawerCloseButton,
 } from '@chakra-ui/react'
+import {
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+} from '@chakra-ui/react'
 import { Button } from '@chakra-ui/react'
 import { Input } from '@chakra-ui/react'
 import { useDisclosure } from '@chakra-ui/react'
-import { VStack } from '@chakra-ui/react'
-
+import { VStack, HStack } from '@chakra-ui/react'
+import { Center } from '@chakra-ui/react'
+import { Select } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
+import { Spacer } from '@chakra-ui/react'
+// import { ChevronDownIcon } from '@chakra-ui/icons'
+import { SearchIcon } from '@chakra-ui/icons'
+import { IconButton } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 export default function App() {
   // 2. Wrap ChakraProvider at the root of your app
@@ -31,11 +44,14 @@ export default function App() {
 }
 
 
+
+
 function MainApp() {
   const [services, setServices] = useState(Array(7).fill(false));
-  const [data, setData] = useState([{"title":"Use the search bar above","services":""}]);
+  const [data, setData] = useState([{"title":"Mad Max","services":"Netflix, Prime"}, {"title":"Batman","services":"Viaplay"}]);
   // const [search, setSearch] = useState("");
   let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
+ 
   function handleTickboxCheck(i) {
     var newServices = services.slice(); 
     var a = 1;
@@ -46,8 +62,8 @@ function MainApp() {
 
 
   function onSubmit(event) {
-
     event.preventDefault();
+    console.log(event.target[0].value);
     // Using fetch to fetch the api from
     // flask server it will be redirected to proxy
 
@@ -89,18 +105,21 @@ function MainApp() {
     <div className="app-frame">
       <div className="header">
         <h2 className='title'>May I Please Stream?</h2>
-        <SearchBar handleSubmit = {onSubmit}/>
+        {/* <SearchBar handleSubmit = {onSubmit}/> */}
+        <InputField onSubmit = {onSubmit}/>
         <h3 className='title'> Services</h3>
         <DrawerExample services={ availableServices } handleTickboxCheck= { handleTickboxCheck }/>
       </div>
     <div className="results-frame">
       <h3 className='title'>Results</h3>
       <div className="results">
+        <VStack spacing={4} align='stretch'>
         {data.map(function (item, i){
           if(item){
             return <Result name={item["title"]} services={item["services"]} />
           }
         })}
+        </VStack>
       </div>
     </div>
     </div>
@@ -108,30 +127,64 @@ function MainApp() {
   );
 }
 
+
+function ActionDropdown({setSearchMode}) {
+  return(
+  <Select  onChange={(event) => setSearchMode(event) } width = "100%">
+    <option value='Director'>Search by Director</option>
+    <option value='Actor'>Search by Actor</option>
+    <option value='Genre'>Search by Genre</option>
+  </Select>
+  )
+}
+
 function Result({name, services}) {
   return (
-  <>  
-  <div>
-    {name}
-  </div>
-  <div>
-    {services}
-  </div></>);
+    <Card>
+      <CardBody>
+        <Flex spacing={4} >
+          <h3>{name}</h3>
+          <Spacer />
+          <h2> {services} </h2>
+        </Flex>
+        </CardBody>
+    </Card>
+  );
 }      
 
-function SearchBar({handleSubmit}) {
+function SearchBar({onSubmit, searchMode}) {
   return (
-    <>
-    <form className="search-bar" onSubmit={handleSubmit}>
-    <div >
-      <input type="text" placeholder="Search for director..." />
-    </div>
-    <input type="submit" value="Submit" />
+    <form onSubmit={(e) => onSubmit(e)}>
+      <Flex spacing={4} width = "200%">
+        <Input placeholder= {String(searchMode) + " name ..."}  width='auto'  />
+        <IconButton type="submit" aria-label='Search database' icon={<SearchIcon />} />
+      </Flex>
     </form>
-    </>
   );
 }
 
+
+function InputField({onSubmit}) {
+  const [searchMode, setSearchMode] = useState("Director");
+
+  function onSearchModeChange(event) {
+    setSearchMode(event.target.value);
+  }
+
+  return (
+    // <Flex spacing={4} >
+    <Flex spacing={4} >
+    <Box width = "100px">
+    <SearchBar onSubmit = {onSubmit} searchMode = {searchMode}/>
+    </Box>
+    <Spacer />
+    <Box width = "100px">
+    <ActionDropdown setSearchMode={onSearchModeChange}/>
+    </Box>
+    </Flex> 
+  // </Flex>
+  );
+}
 
 function DrawerExample({services , handleTickboxCheck}) {
   const { isOpen, onOpen, onClose } = useDisclosure()
