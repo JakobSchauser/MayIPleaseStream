@@ -33,6 +33,10 @@ import { Spacer } from '@chakra-ui/react'
 import { SearchIcon } from '@chakra-ui/icons'
 import { IconButton } from '@chakra-ui/react'
 import { Box } from '@chakra-ui/react'
+import { Heading } from '@chakra-ui/react'
+import { AbsoluteCenter } from '@chakra-ui/react'
+import { SimpleGrid } from '@chakra-ui/react'
+import { Badge } from '@chakra-ui/react'
 
 export default function App() {
   // 2. Wrap ChakraProvider at the root of your app
@@ -48,13 +52,12 @@ export default function App() {
 
 function MainApp() {
   const [services, setServices] = useState(Array(7).fill(false));
-  const [data, setData] = useState([{"title":"Mad Max","services":"Netflix, Prime"}, {"title":"Batman","services":"Viaplay"}]);
+  const [data, setData] = useState([]);
   // const [search, setSearch] = useState("");
   let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
  
   function handleTickboxCheck(i) {
     var newServices = services.slice(); 
-    var a = 1;
     newServices[i] = !newServices[i];
     setServices(newServices);
     console.log(newServices); 
@@ -104,22 +107,38 @@ function MainApp() {
     <>  
     <div className="app-frame">
       <div className="header">
-        <h2 className='title'>May I Please Stream?</h2>
+        <Center>
+        <Heading size="xl" isTruncated>
+          May I Please Stream?
+        </Heading>
+        </Center>
+        <Box position='relative' padding='10'>
+          <Divider />
+          <AbsoluteCenter bg='white' px='4'>
+            Please? I just really want to watch a movie
+          </AbsoluteCenter>
+        </Box>
         {/* <SearchBar handleSubmit = {onSubmit}/> */}
-        <InputField onSubmit = {onSubmit}/>
-        <h3 className='title'> Services</h3>
-        <DrawerExample services={ availableServices } handleTickboxCheck= { handleTickboxCheck }/>
+        <InputField onSubmit = {onSubmit} availableServices={ availableServices } handleTickboxCheck = {handleTickboxCheck}/>
       </div>
     <div className="results-frame">
-      <h3 className='title'>Results</h3>
+      <Box position='relative' padding='50px'>
+        <Divider />
+        <AbsoluteCenter bg='white' px='4'>
+          Results
+        </AbsoluteCenter>
+      </Box>
+
       <div className="results">
-        <VStack spacing={4} align='stretch'>
+      <SimpleGrid columns={2} spacing={10}>
+
+        
         {data.map(function (item, i){
           if(item){
             return <Result name={item["title"]} services={item["services"]} />
           }
         })}
-        </VStack>
+      </SimpleGrid>
       </div>
     </div>
     </div>
@@ -130,7 +149,7 @@ function MainApp() {
 
 function ActionDropdown({setSearchMode}) {
   return(
-  <Select  onChange={(event) => setSearchMode(event) } width = "100%">
+  <Select  onChange={(event) => setSearchMode(event) } width = "200px">
     <option value='Director'>Search by Director</option>
     <option value='Actor'>Search by Actor</option>
     <option value='Genre'>Search by Genre</option>
@@ -143,9 +162,13 @@ function Result({name, services}) {
     <Card>
       <CardBody>
         <Flex spacing={4} >
-          <h3>{name}</h3>
+          {name}
           <Spacer />
-          <h2> {services} </h2>
+          <Box >
+            <SimpleGrid columns = {Math.min((services.split(",").length),3)} spacing={1} >
+            {services.split(",").map((s) =><><Badge> {s.trim()}</Badge> </> )}
+            </SimpleGrid>
+          </Box>
         </Flex>
         </CardBody>
     </Card>
@@ -155,16 +178,16 @@ function Result({name, services}) {
 function SearchBar({onSubmit, searchMode}) {
   return (
     <form onSubmit={(e) => onSubmit(e)}>
-      <Flex spacing={4} width = "200%">
-        <Input placeholder= {String(searchMode) + " name ..."}  width='auto'  />
+      <HStack spacing={0} >
+        <Input placeholder= {String(searchMode) + " name ..."}  width='350px'  />
         <IconButton type="submit" aria-label='Search database' icon={<SearchIcon />} />
-      </Flex>
+        </HStack>
     </form>
   );
 }
 
 
-function InputField({onSubmit}) {
+function InputField({onSubmit, availableServices, handleTickboxCheck}) {
   const [searchMode, setSearchMode] = useState("Director");
 
   function onSearchModeChange(event) {
@@ -173,14 +196,12 @@ function InputField({onSubmit}) {
 
   return (
     // <Flex spacing={4} >
-    <Flex spacing={4} >
-    <Box width = "100px">
+    <Flex spacing={4} width = "100%">
     <SearchBar onSubmit = {onSubmit} searchMode = {searchMode}/>
-    </Box>
     <Spacer />
-    <Box width = "100px">
     <ActionDropdown setSearchMode={onSearchModeChange}/>
-    </Box>
+    <Spacer />
+    <DrawerExample services={ availableServices } handleTickboxCheck= { handleTickboxCheck }/>
     </Flex> 
   // </Flex>
   );
@@ -190,10 +211,15 @@ function DrawerExample({services , handleTickboxCheck}) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const btnRef = React.useRef()
 
+  function onSave() {
+    
+    onClose();
+  }
+
   return (
     <>
       <Button ref={btnRef} colorScheme='teal' onClick={onOpen}>
-        Open
+        Choose Services
       </Button>
 
       <Drawer
@@ -223,7 +249,7 @@ function DrawerExample({services , handleTickboxCheck}) {
             <Button variant='outline' mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button colorScheme='blue'>Save</Button>
+            <Button colorScheme='blue' onClick = {onSave}>Save</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
