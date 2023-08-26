@@ -9,21 +9,20 @@ class StreamFinder():
         
         self.my_services = []
 
-        possible = ["Netflix","Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"]
+        # possible = ["Netflix","Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"]
+        possible = []
+        short_names = []
+        for p in self.just_watch.get_providers():
+            possible.append(p["clear_name"])
+            short_names.append(p["short_name"])
+
+
         for i in range(len(services)):
             if services[i]:
                 self.my_services.append(possible[i])
-        # TODO: Remake this using
-        # for p in just_watch.get_providers():
-        #     print(p["short_name"], p["clear_name"])
-        self.readable2short = {"Netflix" : "nfx",
-                            "Filmstriben": "fsb",
-                            "Disney+": "dnp",
-                            "HBO MAX": "hbm",
-                            "Prime Video": "prv",
-                            "Sky Showtime": "sst",
-                            "Viaplay": "vip"
-                        }
+
+
+        self.readable2short = dict(zip(possible, short_names))
 
         self.short2readable = {v: k for k, v in self.readable2short.items()}
 
