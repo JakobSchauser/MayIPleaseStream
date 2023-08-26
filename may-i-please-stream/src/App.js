@@ -2,6 +2,7 @@ import {useState} from 'react';
 // import {useEffect} from 'react';
 import * as React from 'react'
 
+
 // 1. import `ChakraProvider` component
 import { ChakraProvider, Divider } from '@chakra-ui/react'
 import { Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react'
@@ -37,6 +38,12 @@ import { Heading } from '@chakra-ui/react'
 import { AbsoluteCenter } from '@chakra-ui/react'
 import { SimpleGrid } from '@chakra-ui/react'
 import { Badge } from '@chakra-ui/react'
+import { Spinner } from '@chakra-ui/react'
+import { useToast } from '@chakra-ui/react'
+
+import Cookies from 'universal-cookie';
+const cookies = new Cookies();
+
 
 export default function App() {
   // 2. Wrap ChakraProvider at the root of your app
@@ -51,18 +58,54 @@ export default function App() {
 
 
 function MainApp() {
-  const [services, setServices] = useState(Array(7).fill(false));
+  const [services, setServices] = useState(Array(2).fill(false));
+  const [searchMode, setSearchMode] = useState("Director");
+
   const [data, setData] = useState([]);
   // const [search, setSearch] = useState("");
-  let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
- 
+  // let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
+  const [availableServices, setAvailableServices] = useState(["Could not find any services"]);
   function handleTickboxCheck(i) {
+    console.log(services);
+    console.log("Checked box " + i);
     var newServices = services.slice(); 
     newServices[i] = !newServices[i];
     setServices(newServices);
     console.log(newServices); 
   }
 
+  // run once on load
+  React.useEffect(() => {
+    console.log("Loaded");
+    let jdata = ["netflix"]
+    fetch("/services", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) =>
+        res.json().then((jsondata) => {
+            // Setting a data from api
+            setAvailableServices(jsondata["names"]);
+            console.log("Loaded services from api and found:");
+            console.log(jsondata["names"]);
+            jdata = jsondata["names"];
+        }).catch((err) => {
+            console.log(err);
+        } )
+    );
+    console.log(cookies.get('userServices'));
+
+    if(cookies.get('userServices')){
+      setServices(cookies.get('userServices')['userServices']);
+      console.log("Loaded services from cookie");
+    } else {
+      setServices(Array(jdata.length).fill(false));
+      console.log("No cookie found");
+    }
+
+
+  }, []);
 
   function onSubmit(event) {
     event.preventDefault();
@@ -88,6 +131,7 @@ function MainApp() {
       body: JSON.stringify({
         search: event.target[0].value,
         services: services,
+        search_mode: searchMode,
       }),
 
     }).then((res) =>
@@ -119,7 +163,7 @@ function MainApp() {
           </AbsoluteCenter>
         </Box>
         {/* <SearchBar handleSubmit = {onSubmit}/> */}
-        <InputField onSubmit = {onSubmit} availableServices={ availableServices } handleTickboxCheck = {handleTickboxCheck}/>
+        <InputField onSubmit = {onSubmit} availableServices={ availableServices } setServices = {setServices} userServices = {services} handleTickboxCheck = {handleTickboxCheck} searchMode={searchMode} setSearchMode={setSearchMode}/>
       </div>
     <div className="results-frame">
       <Box position='relative' padding='50px'>
@@ -131,8 +175,6 @@ function MainApp() {
 
       <div className="results">
       <SimpleGrid columns={2} spacing={10}>
-
-        
         {data.map(function (item, i){
           if(item){
             return <Result name={item["title"]} services={item["services"]} />
@@ -162,12 +204,17 @@ function Result({name, services}) {
     <Card>
       <CardBody>
         <Flex spacing={4} >
+          <Box w = "50%">
           {name}
+          </Box>
           <Spacer />
-          <Box >
-            <SimpleGrid columns = {Math.min((services.split(",").length),3)} spacing={1} >
+
+          <Box w = "50%">
+            {/* <SimpleGrid columns = {Math.min(2,3)} spacing={1} > */}
+            <VStack spacing={1} >
             {services.split(",").map((s) =><><Badge> {s.trim()}</Badge> </> )}
-            </SimpleGrid>
+            </VStack>
+            {/* </SimpleGrid> */}
           </Box>
         </Flex>
         </CardBody>
@@ -178,42 +225,63 @@ function Result({name, services}) {
 function SearchBar({onSubmit, searchMode}) {
   return (
     <form onSubmit={(e) => onSubmit(e)}>
-      <HStack spacing={0} >
-        <Input placeholder= {String(searchMode) + " name ..."}  width='350px'  />
-        <IconButton type="submit" aria-label='Search database' icon={<SearchIcon />} />
+      <Box >
+        <HStack spacing={2} width = "100%">
+          <Input placeholder= {String(searchMode) + " name ..."} minW = "300px"/>
+          <IconButton type="submit" aria-label='Search database' icon={<SearchIcon />} />
         </HStack>
+      </Box>
     </form>
   );
 }
 
 
-function InputField({onSubmit, availableServices, handleTickboxCheck}) {
-  const [searchMode, setSearchMode] = useState("Director");
+function InputField({onSubmit, setServices, availableServices, userServices, handleTickboxCheck,searchMode, setSearchMode}) {
 
   function onSearchModeChange(event) {
     setSearchMode(event.target.value);
   }
 
   return (
-    // <Flex spacing={4} >
-    <Flex spacing={4} width = "100%">
-    <SearchBar onSubmit = {onSubmit} searchMode = {searchMode}/>
-    <Spacer />
-    <ActionDropdown setSearchMode={onSearchModeChange}/>
-    <Spacer />
-    <DrawerExample services={ availableServices } handleTickboxCheck= { handleTickboxCheck }/>
-    </Flex> 
-  // </Flex>
+    <Flex spacing={10}>
+      <SearchBar onSubmit = {onSubmit} searchMode = {searchMode}/>
+      <Spacer />
+      <HStack>
+        <ActionDropdown setSearchMode={onSearchModeChange}/>
+        <DrawerExample services={ availableServices } setServices = {setServices} userServices = {userServices} handleTickboxCheck= { handleTickboxCheck }/>
+      </HStack>
+    </Flex>
   );
 }
 
-function DrawerExample({services , handleTickboxCheck}) {
+function saveCookie({userServices}) {
+  // const toast = useToast();
+  cookies.set('userServices', {userServices}, { path: '/' });
+  console.log("Saved the following services:"); 
+  // toast({
+  //   title: 'Services saved.',
+  //   description: "Your services have been saved as a cookie.",
+  //   status: 'success',
+  //   duration: 6000,
+  //   isClosable: true,
+  // })
+  console.log(cookies.get('userServices')); 
+}
+
+
+function DrawerExample({services , setServices, userServices, handleTickboxCheck}) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const btnRef = React.useRef()
 
-  function onSave() {
-    
+  function onSave({userServices}) {
+    saveCookie({userServices});
     onClose();
+  }
+
+  function trueOnClose(){
+    setServices(cookies.get('userServices')['userServices']);
+    onClose();
+    console.log("Closed");
   }
 
   return (
@@ -225,7 +293,7 @@ function DrawerExample({services , handleTickboxCheck}) {
       <Drawer
         isOpen={isOpen}
         placement='left'
-        onClose={onClose}
+        onClose={trueOnClose}
         finalFocusRef={btnRef}
       >
         <DrawerOverlay />
@@ -238,7 +306,7 @@ function DrawerExample({services , handleTickboxCheck}) {
               <VStack align='start'>
                 {services.map(function (item, i){
                   if(item){
-                    return <ServiceCheckbox service={item} handleTickboxCheck={() => handleTickboxCheck(i)}/>
+                    return <ServiceCheckbox service={item} isChecked = {userServices[i]} handleTickboxCheck={() => handleTickboxCheck(i)}/>
                   }
                 })}
               </VStack>
@@ -246,10 +314,10 @@ function DrawerExample({services , handleTickboxCheck}) {
           </DrawerBody>
 
           <DrawerFooter>
-            <Button variant='outline' mr={3} onClick={onClose}>
+            <Button variant='outline' mr={3} onClick={trueOnClose}>
               Cancel
             </Button>
-            <Button colorScheme='blue' onClick = {onSave}>Save</Button>
+            <Button colorScheme='blue' onClick = {() => onSave({userServices})}>Save</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -258,11 +326,11 @@ function DrawerExample({services , handleTickboxCheck}) {
 }
 
 
-function ServiceCheckbox({service, handleTickboxCheck}) {
+function ServiceCheckbox({service, isChecked, handleTickboxCheck}) {
   // const [checked, setChecked] = useState(false);
   return (
     
-    <Checkbox onChange={handleTickboxCheck} > {service} </Checkbox>
+    <Checkbox onChange={handleTickboxCheck} isChecked = {isChecked}> {service} </Checkbox>
       
   );
 }
