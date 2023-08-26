@@ -26,6 +26,10 @@ class StreamFinder():
 
         self.short2readable = {v: k for k, v in self.readable2short.items()}
 
+        genres = self.just_watch.get_genres()
+
+        self.readablegenre2short = dict(zip([genre["technical_name"] for genre in genres], [genre["short_name"] for genre in genres]))
+        self.readable_genres = [genre["technical_name"] for genre in genres]
 
     def get_streaming_services(self, movie_name):
         results = self.just_watch.search_for_item(query=movie_name, content_types=['movie'])
@@ -82,6 +86,12 @@ class StreamFinder():
 
     def get_top_in_genre(self, genre):
         # top_in_genre = self.ia.get_top50_movies_by_genres(genre)
+        if genre not in self.readablegenre2short.keys() or genre not in self.readablegenre2short.values():
+            return set([])
+        
+        if genre in self.readablegenre2short.keys():
+            genre = self.readablegenre2short[genre]
+            
         results_by_genre = self.just_watch.search_for_item(providers =[v for k, v in self.readable2short.items()], content_types=['movie'], genres=['hrr'])["items"]
         return self.get_watchable_movies(results_by_genre)
 

@@ -60,7 +60,7 @@ export default function App() {
 function MainApp() {
   const [services, setServices] = useState(Array(2).fill(false));
   const [searchMode, setSearchMode] = useState("Director");
-
+  const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   // const [search, setSearch] = useState("");
   // let availableServices = ["Netflix", "Filmstriben", "Disney+", "HBO MAX", "Prime Video", "Sky Showtime", "Viaplay"];
@@ -108,6 +108,8 @@ function MainApp() {
   }, []);
 
   function onSubmit(event) {
+    setIsLoading(true);
+    console.log("Submitted!");
     event.preventDefault();
     console.log(event.target[0].value);
     // Using fetch to fetch the api from
@@ -139,6 +141,8 @@ function MainApp() {
             // Setting a data from api
             setData(jsondata);
             console.log(jsondata);
+            setIsLoading(false);
+            console.log("Loaded data from api");
 
         }).catch((err) => {
             console.log(err);
@@ -148,42 +152,43 @@ function MainApp() {
   }
 
   return (
-    <>  
-    <div className="app-frame">
-      <div className="header">
-        <Center>
-        <Heading size="xl" isTruncated>
-          May I Please Stream?
-        </Heading>
-        </Center>
-        <Box position='relative' padding='10'>
+    <> 
+    <Center>
+      <Box width = "50%" padding = "30" >
+          <Center>
+          <Heading size="xl" isTruncated>
+            May I Please Stream?
+          </Heading>
+          </Center>
+          <Box position='relative' padding='10'>
+            <Divider />
+            <AbsoluteCenter bg='white' px='4'>
+              Please? I just really want to watch a movie
+            </AbsoluteCenter>
+          </Box>
+          {/* <SearchBar handleSubmit = {onSubmit}/> */}
+          <InputField onSubmit = {onSubmit} availableServices={ availableServices } setServices = {setServices} userServices = {services} handleTickboxCheck = {handleTickboxCheck} searchMode={searchMode} setSearchMode={setSearchMode} isLoading = {isLoading}/>
+      <div className="results-frame">
+        <Box position='relative' padding='50px'>
           <Divider />
           <AbsoluteCenter bg='white' px='4'>
-            Please? I just really want to watch a movie
+            Results
           </AbsoluteCenter>
         </Box>
-        {/* <SearchBar handleSubmit = {onSubmit}/> */}
-        <InputField onSubmit = {onSubmit} availableServices={ availableServices } setServices = {setServices} userServices = {services} handleTickboxCheck = {handleTickboxCheck} searchMode={searchMode} setSearchMode={setSearchMode}/>
-      </div>
-    <div className="results-frame">
-      <Box position='relative' padding='50px'>
-        <Divider />
-        <AbsoluteCenter bg='white' px='4'>
-          Results
-        </AbsoluteCenter>
-      </Box>
+        
 
-      <div className="results">
-      <SimpleGrid columns={2} spacing={10}>
-        {data.map(function (item, i){
-          if(item){
-            return <Result name={item["title"]} services={item["services"]} />
-          }
-        })}
-      </SimpleGrid>
+        <div className="results">
+        <SimpleGrid columns={2} spacing={10}>
+          {data.map(function (item, i){
+            if(item){
+              return <Result name={item["title"]} services={item["services"]} />
+            }
+          })}
+        </SimpleGrid>
+        </div>
       </div>
-    </div>
-    </div>
+      </Box>
+    </Center>
     </>
   );
 }
@@ -191,7 +196,7 @@ function MainApp() {
 
 function ActionDropdown({setSearchMode}) {
   return(
-  <Select  onChange={(event) => setSearchMode(event) } width = "200px">
+  <Select  onChange={(event) => setSearchMode(event) } width = "100%">
     <option value='Director'>Search by Director</option>
     <option value='Actor'>Search by Actor</option>
     <option value='Genre'>Search by Genre</option>
@@ -212,7 +217,7 @@ function Result({name, services}) {
           <Box w = "50%">
             {/* <SimpleGrid columns = {Math.min(2,3)} spacing={1} > */}
             <VStack spacing={1} >
-            {services.split(",").map((s) =><><Badge> {s.trim()}</Badge> </> )}
+            {services.split(",").map((s) =><><Badge colorScheme='teal' variant='solid'> {s.trim()}</Badge> </> )}
             </VStack>
             {/* </SimpleGrid> */}
           </Box>
@@ -222,13 +227,13 @@ function Result({name, services}) {
   );
 }      
 
-function SearchBar({onSubmit, searchMode}) {
+function SearchBar({onSubmit, searchMode, isLoading}) {
   return (
     <form onSubmit={(e) => onSubmit(e)}>
       <Box >
-        <HStack spacing={2} width = "100%">
-          <Input placeholder= {String(searchMode) + " name ..."} minW = "300px"/>
-          <IconButton type="submit" aria-label='Search database' icon={<SearchIcon />} />
+        <HStack spacing={4} width = "100%">
+          <Input placeholder= {String(searchMode) + " name ..."}  minW = "290px" />
+          <IconButton isLoading = {isLoading} type="submit" aria-label='Search database' icon={<SearchIcon />} colorScheme='teal'/>
         </HStack>
       </Box>
     </form>
@@ -236,21 +241,21 @@ function SearchBar({onSubmit, searchMode}) {
 }
 
 
-function InputField({onSubmit, setServices, availableServices, userServices, handleTickboxCheck,searchMode, setSearchMode}) {
+function InputField({onSubmit, setServices, availableServices, userServices, handleTickboxCheck,searchMode, setSearchMode, isLoading}) {
 
   function onSearchModeChange(event) {
     setSearchMode(event.target.value);
   }
 
   return (
-    <Flex spacing={10}>
-      <SearchBar onSubmit = {onSubmit} searchMode = {searchMode}/>
-      <Spacer />
-      <HStack>
-        <ActionDropdown setSearchMode={onSearchModeChange}/>
+    <VStack>
+      <SearchBar onSubmit = {onSubmit} searchMode = {searchMode} isLoading = {isLoading}/>
+      {/* <Spacer /> */}
+      <HStack spacing = {4}>
+        <ActionDropdown setSearchMode={onSearchModeChange} />
         <DrawerExample services={ availableServices } setServices = {setServices} userServices = {userServices} handleTickboxCheck= { handleTickboxCheck }/>
       </HStack>
-    </Flex>
+    </VStack>
   );
 }
 
@@ -286,8 +291,8 @@ function DrawerExample({services , setServices, userServices, handleTickboxCheck
 
   return (
     <>
-      <Button ref={btnRef} colorScheme='teal' onClick={onOpen}>
-        Choose Services
+      <Button ref={btnRef} colorScheme='teal' onClick={onOpen} w="70%"> 
+        {userServices.filter((a) => a).length > 0 ? "Searching " + String(userServices.filter((a) => a).length) + " services" : "Choose services"}
       </Button>
 
       <Drawer
@@ -299,10 +304,10 @@ function DrawerExample({services , setServices, userServices, handleTickboxCheck
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>Create your account</DrawerHeader>
+          <DrawerHeader>Select your services</DrawerHeader>
 
           <DrawerBody>
-            <CheckboxGroup colorScheme='teal' defaultValue={['Netflix']}>
+            <CheckboxGroup defaultValue={['Netflix']}>
               <VStack align='start'>
                 {services.map(function (item, i){
                   if(item){
@@ -317,7 +322,7 @@ function DrawerExample({services , setServices, userServices, handleTickboxCheck
             <Button variant='outline' mr={3} onClick={trueOnClose}>
               Cancel
             </Button>
-            <Button colorScheme='blue' onClick = {() => onSave({userServices})}>Save</Button>
+            <Button colorScheme='blue' onClick = {() => onSave({userServices})} colorScheme = "teal">Save</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

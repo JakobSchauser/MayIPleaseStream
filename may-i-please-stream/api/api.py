@@ -17,20 +17,22 @@ from MayIPleaseStream import StreamFinder
 def get_current_test():
     request_data = request.get_json()
     print(request_data)
-    director = request_data["search"]
+    search_term = request_data["search"]
     services = request_data["services"]
     search_mode = request_data["search_mode"].lower()
 
-    assert search_mode in ["director", "actor"], "search_mode must be either 'director' or 'actor'"
+    assert search_mode in ["director", "actor", "genre"], "search_mode must be either 'director', 'actor' or 'genre'"
     # return request_data
 
     sf = StreamFinder(services=services)
 
 
     if search_mode == "director":
-        movies = sf.get_director_movies(director)
-    else:
-        movies = sf.get_actor_movies(director)
+        movies = sf.get_director_movies(search_term)
+    elif search_mode == "actor":
+        movies = sf.get_actor_movies(search_term)
+    elif search_mode == "genre":
+        movies = sf.get_top_in_genre(search_term)
 
     return sf.make_json(movies)
 
