@@ -163,7 +163,7 @@ function MainApp() {
           <Box position='relative' padding='10'>
             <Divider />
             <AbsoluteCenter bg='white' px='4'>
-              Please? I just really want to watch a movie
+              {/* Please? I just really want to watch a movie */}
             </AbsoluteCenter>
           </Box>
           {/* <SearchBar handleSubmit = {onSubmit}/> */}
@@ -196,7 +196,7 @@ function MainApp() {
 
 function ActionDropdown({setSearchMode}) {
   return(
-  <Select  onChange={(event) => setSearchMode(event) } width = "100%">
+  <Select  onChange={(event) => setSearchMode(event) } W = "50%">
     <option value='Director'>Search by Director</option>
     <option value='Actor'>Search by Actor</option>
     <option value='Genre'>Search by Genre</option>
@@ -228,15 +228,15 @@ function Result({name, services}) {
 }      
 
 function SearchBar({onSubmit, searchMode, isLoading}) {
+  const [search, setSearch] = useState("");
   return (
-    <form onSubmit={(e) => onSubmit(e)}>
-      <Box >
-        <HStack spacing={4} width = "100%">
-          <Input placeholder= {String(searchMode) + " name ..."}  minW = "290px" />
-          <IconButton isLoading = {isLoading} type="submit" aria-label='Search database' icon={<SearchIcon />} colorScheme='teal'/>
-        </HStack>
-      </Box>
-    </form>
+    <Flex spacing={4} minW = "100%" gap={4} justify = "space-between">
+      <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder= {String(searchMode) + " name ..."} flexGrow={1} />
+
+      <IconButton
+        onClick={(_) => onSubmit(search)}
+        isLoading = {isLoading} type="submit" aria-label='Search database' icon={<SearchIcon />} colorScheme='teal' minW = "50px" maxW = "50px"/>
+    </Flex>
   );
 }
 
@@ -248,14 +248,17 @@ function InputField({onSubmit, setServices, availableServices, userServices, han
   }
 
   return (
-    <VStack>
-      <SearchBar onSubmit = {onSubmit} searchMode = {searchMode} isLoading = {isLoading}/>
-      {/* <Spacer /> */}
-      <HStack spacing = {4}>
-        <ActionDropdown setSearchMode={onSearchModeChange} />
-        <DrawerExample services={ availableServices } setServices = {setServices} userServices = {userServices} handleTickboxCheck= { handleTickboxCheck }/>
-      </HStack>
-    </VStack>
+    <Center minW = "50%" >
+      <VStack gap={3} minW="100%" bg="blue">
+        <SearchBar onSubmit = {onSubmit} searchMode = {searchMode} isLoading = {isLoading}/>
+
+        <Flex spacing = {4} width = "100%">
+          <ActionDropdown setSearchMode={onSearchModeChange} />
+          <Spacer minW={4}/>
+          <DrawerExample services={ availableServices } setServices = {setServices} userServices = {userServices} handleTickboxCheck= { handleTickboxCheck }/>
+        </Flex>
+      </VStack>
+    </Center>
   );
 }
 
@@ -291,7 +294,7 @@ function DrawerExample({services , setServices, userServices, handleTickboxCheck
 
   return (
     <>
-      <Button ref={btnRef} colorScheme='teal' onClick={onOpen} w="70%"> 
+      <Button ref={btnRef} colorScheme='teal' onClick={onOpen} minW="140px"> 
         {userServices.filter((a) => a).length > 0 ? "Searching " + String(userServices.filter((a) => a).length) + " services" : "Choose services"}
       </Button>
 
@@ -322,7 +325,7 @@ function DrawerExample({services , setServices, userServices, handleTickboxCheck
             <Button variant='outline' mr={3} onClick={trueOnClose}>
               Cancel
             </Button>
-            <Button colorScheme='blue' onClick = {() => onSave({userServices})} colorScheme = "teal">Save</Button>
+            <Button onClick = {() => onSave({userServices})} colorScheme = "teal">Save</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
